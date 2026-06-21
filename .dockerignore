@@ -1,0 +1,8 @@
+build/
+dist/
+target/
+.git/
+.idea/
+.vscode/
+nbproject/private/
+*.iml

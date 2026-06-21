@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="CampusServiceManagementSystem" default="war" basedir=".">
+    <property name="src.dir" value="src/java"/>
+    <property name="web.dir" value="web"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/web/WEB-INF/classes"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="war.name" value="CampusServiceManagementSystem.war"/>
+
+    <!-- Set GLASSFISH_HOME if running Ant outside NetBeans, example:
+         ant -DGLASSFISH_HOME="C:/glassfish8" war -->
+    <path id="compile.classpath">
+        <fileset dir="${GLASSFISH_HOME}/glassfish/modules" erroronmissingdir="false">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="${basedir}/lib" erroronmissingdir="false">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false" source="17" target="17" encoding="UTF-8">
+            <classpath refid="compile.classpath"/>
+        </javac>
+    </target>
+
+    <target name="war" depends="compile">
+        <mkdir dir="${dist.dir}"/>
+        <copy todir="${build.dir}/web">
+            <fileset dir="${web.dir}"/>
+        </copy>
+        <copy todir="${build.dir}/web/WEB-INF/lib" failonerror="false">
+            <fileset dir="${basedir}/lib">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        <war destfile="${dist.dir}/${war.name}" webxml="${web.dir}/WEB-INF/web.xml">
+            <fileset dir="${build.dir}/web"/>
+        </war>
+        <echo message="Built ${dist.dir}/${war.name}"/>
+    </target>
+</project>

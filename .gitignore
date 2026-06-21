@@ -1,0 +1,8 @@
+build/
+dist/
+target/
+tools/
+*.log
+*.class
+*.war
+lib/*.jar
