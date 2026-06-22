@@ -1,9 +1,11 @@
 services:
   - type: web
     name: smart-campus-api
-    env: docker
+    runtime: docker
+    repo: https://github.com/TumeloSebothoma192/smart-campus
+    branch: backend
     plan: starter
-    autoDeploy: true
+    autoDeployTrigger: commit
     healthCheckPath: /CampusServiceManagementSystemBackend/web/api/health
     envVars:
       - key: DATABASE_URL
