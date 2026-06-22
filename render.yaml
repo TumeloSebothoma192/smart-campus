@@ -15,4 +15,4 @@ services:
 
 databases:
   - name: smart-campus-postgres
-    plan: starter
+    plan: basic-256mb
