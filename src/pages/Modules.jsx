@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, apiError, mock } from '../services/api';
+import { api, apiError } from '../services/api';
 import { useAuth } from '../context/AuthContext.jsx';
 import { canAdmin, canTeach } from '../services/roles.js';
 
@@ -16,8 +16,8 @@ export default function Modules() {
     api.get('/api/modules/all-modules')
       .then((response) => setModules(response.data.modules || []))
       .catch((err) => {
-        setModules(mock.modules);
-        setNotice(`Showing fallback modules: ${apiError(err)}`);
+        setModules([]);
+        setNotice(`Could not load modules: ${apiError(err)}`);
       });
   }
 

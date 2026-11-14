@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, apiError, mock } from '../services/api';
+import { api, apiError } from '../services/api';
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
@@ -11,8 +11,8 @@ export default function Notifications() {
     api.get('/api/notifications/getNotifications')
       .then((response) => setNotifications(response.data.notifications || []))
       .catch((err) => {
-        setNotifications(mock.notifications);
-        setNotice(`Showing fallback notifications: ${apiError(err)}`);
+        setNotifications([]);
+        setNotice(`Could not load notifications: ${apiError(err)}`);
       });
   }
 

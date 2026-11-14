@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, apiError, mock } from '../services/api';
+import { api, apiError } from '../services/api';
 import { useAuth } from '../context/AuthContext.jsx';
 import { canAdmin } from '../services/roles.js';
 
@@ -14,8 +14,8 @@ export default function Rooms() {
     api.get('/api/rooms')
       .then((response) => setRooms(response.data.rooms || []))
       .catch((err) => {
-        setRooms(mock.rooms);
-        setNotice(`Showing fallback rooms: ${apiError(err)}`);
+        setRooms([]);
+        setNotice(`Could not load rooms: ${apiError(err)}`);
       });
   }
 

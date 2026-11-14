@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { api, apiError, mock } from '../services/api';
+import { api, apiError } from '../services/api';
 
 export default function Bookings() {
   const [bookings, setBookings] = useState([]);
-  const [roomId, setRoomId] = useState('1');
+  const [roomId, setRoomId] = useState('');
+  const [rooms, setRooms] = useState([]);
   const [form, setForm] = useState({ startTime: '', endTime: '', purpose: '' });
   const [notice, setNotice] = useState('');
 
@@ -11,12 +12,22 @@ export default function Bookings() {
     api.get('/api/bookings/my-bookings')
       .then((response) => setBookings(response.data.bookings || []))
       .catch((err) => {
-        setBookings(mock.bookings);
-        setNotice(`Showing fallback bookings: ${apiError(err)}`);
+        setBookings([]);
+        setNotice(`Could not load bookings: ${apiError(err)}`);
       });
   }
 
   useEffect(load, []);
+  // Pick a room from the list instead of typing its ID.
+  useEffect(() => {
+    api.get('/api/rooms')
+      .then((response) => {
+        const list = response.data.rooms || [];
+        setRooms(list);
+        if (list.length) setRoomId((current) => current || String(list[0].id));
+      })
+      .catch(() => {});
+  }, []);
 
   async function createBooking(event) {
     event.preventDefault();
@@ -43,7 +54,15 @@ export default function Bookings() {
       <PageTitle title="Room Bookings" text="Book rooms and manage your reservations." />
       {notice && <div className="alert warning">{notice}</div>}
       <form className="panel form-grid" onSubmit={createBooking}>
-        <label>Room ID<input value={roomId} onChange={(e) => setRoomId(e.target.value)} required /></label>
+        <label>Room
+          {rooms.length ? (
+            <select value={roomId} onChange={(e) => setRoomId(e.target.value)} required>
+              {rooms.map((room) => <option key={room.id} value={room.id}>{room.name}{room.building ? ` (${room.building})` : ''}</option>)}
+            </select>
+          ) : (
+            <input value={roomId} onChange={(e) => setRoomId(e.target.value)} placeholder="Room ID" required />
+          )}
+        </label>
         <label>Start time<input type="datetime-local" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} required /></label>
         <label>End time<input type="datetime-local" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} required /></label>
         <label className="full-span">Purpose<input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} required /></label>

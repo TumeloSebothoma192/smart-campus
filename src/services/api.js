@@ -1,11 +1,20 @@
 import axios from 'axios';
 
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081/CampusServiceManagementSystemBackend/web';
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8081/CampusServiceManagementSystemBackend/web',
+  baseURL: API_BASE,
+  // The hosted backend sleeps when idle and can take ~30-60 s to wake up.
+  timeout: 90000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+/** Ping the backend as soon as the app opens, so it is awake by the time someone signs in. */
+export function warmUp() {
+  return axios.get(API_BASE, { timeout: 90000 }).catch(() => {});
+}
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('smartCampusToken');
@@ -15,53 +24,40 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// An expired or invalid token: sign out and send the user to the login page once.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    const isAuthCall = /\/api\/auth\/(login|register)/.test(error?.config?.url || '');
+    if (status === 401 && !isAuthCall && localStorage.getItem('smartCampusToken')) {
+      localStorage.removeItem('smartCampusToken');
+      localStorage.removeItem('smartCampusUser');
+      if (window.location.pathname !== '/login') window.location.assign('/login?expired=1');
+    }
+    return Promise.reject(error);
+  },
+);
+
 export function unwrap(response) {
   return response.data;
 }
 
 export function apiError(error) {
+  const status = error?.response?.status;
   const data = error?.response?.data;
+  if (data && typeof data === 'object' && data.message) return data.message;
+  if (status === 401) return 'Your session has expired. Please sign in again.';
+  if (status === 403) return 'Your role does not have access to this.';
+  if (status === 404) return 'Not found.';
+  if (error?.code === 'ECONNABORTED') return 'The server took too long to respond. Please try again.';
+  if (!error?.response) return 'Cannot reach the server. It may be waking up; please try again in a moment.';
   if (typeof data === 'string') {
-    return data.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    // Tomcat error pages are HTML: show their title, not the whole page.
+    const title = data.match(/<title>([^<]*)<\/title>/i)?.[1];
+    const text = (title || data.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+    return text.slice(0, 200) || `Request failed (${status}).`;
   }
-  return data?.message || error?.message || 'Backend request failed';
+  return error?.message || 'Request failed';
 }
 
-export const mock = {
-  stats: {
-    users: 5,
-    rooms: 3,
-    bookings: 1,
-    modules: 2,
-    maintenance: 2,
-    appointments: 1,
-    notifications: 2,
-    timetables: 1,
-  },
-  rooms: [
-    { id: '1', name: 'ICT Lab A1', capacity: '45', type: 'lab', building: 'Engineering Block', isAvailable: 'true', equipment: 'Projector, Computers, Wi-Fi' },
-    { id: '2', name: 'Study Room B2', capacity: '12', type: 'study-room', building: 'Library', isAvailable: 'true', equipment: 'Whiteboard, Smart Screen' },
-  ],
-  bookings: [
-    { id: '1', roomName: 'ICT Lab A1', startTime: '2026-06-25T09:00', endTime: '2026-06-25T11:00', purpose: 'Studying', status: 'active' },
-  ],
-  modules: [
-    { id: '1', moduleName: 'Web Technologies', subjectCode: 'WEB202', description: 'Learn frontend, backend, and API integration.', registeredUsers: 'Student Demo' },
-    { id: '2', moduleName: 'Network Security', subjectCode: 'NET301', description: 'Campus network defence fundamentals.', registeredUsers: '' },
-  ],
-  issues: [
-    { id: '1', roomName: 'Study Room B2', issue: 'Lights not working', status: 'pending', createdAt: '2026-06-20 21:00' },
-  ],
-  appointments: [
-    { id: '1', moduleId: '1', lecturerId: '3', date: '2026-06-26T13:00', status: 'pending' },
-  ],
-  notifications: [
-    { id: '1', content: 'Welcome to Smart Campus. Your dashboard is ready.', read: 'false', module: '' },
-  ],
-  timetable: [
-    { id: '1', moduleId: '1', day: 'Monday', startTime: '09:00', endTime: '11:00', roomName: 'ICT Lab A1' },
-  ],
-  serviceRequests: [
-    { requestId: 1, title: 'Wi-Fi not working in lab', department: 'ICT Department', category: 'IT Support', priority: 'MEDIUM', status: 'PENDING', createdAt: '2026-06-20 21:56' },
-  ],
-};
