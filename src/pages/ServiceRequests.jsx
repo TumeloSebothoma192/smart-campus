@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, apiError, mock } from '../services/api';
+import { api, apiError } from '../services/api';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function ServiceRequests() {
@@ -20,14 +20,14 @@ export default function ServiceRequests() {
         setRequests(requestResponse.data.requests || []);
       })
       .catch((err) => {
-        setRequests(mock.serviceRequests);
+        setRequests([]);
         setLookups({
           categories: [{ name: 'IT Support' }, { name: 'Maintenance' }],
           departments: [{ name: 'ICT Department' }, { name: 'Facilities & Maintenance' }],
           statuses: ['PENDING', 'IN_PROGRESS', 'RESOLVED'],
           priorities: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
         });
-        setNotice(`Showing fallback service requests: ${apiError(err)}`);
+        setNotice(`Could not load service requests: ${apiError(err)}`);
       });
   }
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BarChart3, BookOpen, CalendarCheck, DoorOpen, Wrench, Bell, UsersRound, Clock } from 'lucide-react';
-import { api, apiError, mock } from '../services/api';
+import { Link } from 'react-router-dom';
+import { api, apiError } from '../services/api';
 import StatCard from '../components/StatCard.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { profileFor } from '../services/roles.js';
@@ -8,27 +9,39 @@ import { profileFor } from '../services/roles.js';
 export default function Dashboard({ adminOnly = false }) {
   const { user } = useAuth();
   const profile = profileFor(user?.role);
-  const [stats, setStats] = useState(mock.stats);
+  const isAdmin = user?.role === 'ADMIN';
+  // System-wide counts come from an admin-only endpoint. Other roles used to get a 403 and then
+  // see made-up numbers labelled "backend is offline"; they now get shortcut cards instead.
+  const [stats, setStats] = useState(null);
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
+    if (!isAdmin) return;
     api.get('/api/admin/stats')
       .then((response) => {
         setStats(response.data);
         setNotice('');
       })
-      .catch((err) => setNotice(`Showing fallback stats because backend is offline: ${apiError(err)}`));
-  }, []);
+      .catch((err) => setNotice(`Could not load statistics: ${apiError(err)}`));
+  }, [isAdmin]);
+
+  if (adminOnly && !isAdmin) {
+    return (
+      <section className="page-grid">
+        <div className="panel"><h3>Admin only</h3><p>System statistics are only available to administrators.</p></div>
+      </section>
+    );
+  }
 
   const allCards = {
-    Users: ['Users', stats.users, 'registered campus profiles', <UsersRound />],
-    Rooms: ['Rooms', stats.rooms, 'managed learning spaces', <DoorOpen />],
-    Bookings: ['Bookings', stats.bookings, 'room reservations', <CalendarCheck />],
-    Modules: ['Modules', stats.modules, 'academic modules', <BookOpen />],
-    Maintenance: ['Maintenance', stats.maintenance, 'reported issues', <Wrench />],
-    Appointments: ['Appointments', stats.appointments, 'student lecturer meetings', <Clock />],
-    Notifications: ['Notifications', stats.notifications, 'campus messages', <Bell />],
-    Timetables: ['Timetables', stats.timetables, 'scheduled sessions', <BarChart3 />],
+    Users: ['Users', stats?.users, 'registered campus profiles', <UsersRound />, null],
+    Rooms: ['Rooms', stats?.rooms, 'managed learning spaces', <DoorOpen />, '/rooms'],
+    Bookings: ['Bookings', stats?.bookings, 'room reservations', <CalendarCheck />, '/bookings'],
+    Modules: ['Modules', stats?.modules, 'academic modules', <BookOpen />, '/modules'],
+    Maintenance: ['Maintenance', stats?.maintenance, 'reported issues', <Wrench />, '/maintenance'],
+    Appointments: ['Appointments', stats?.appointments, 'student lecturer meetings', <Clock />, '/appointments'],
+    Notifications: ['Notifications', stats?.notifications, 'campus messages', <Bell />, '/notifications'],
+    Timetables: ['Timetables', stats?.timetables, 'scheduled sessions', <BarChart3 />, '/timetable'],
   };
   const cards = profile.cards.map((name) => allCards[name]).filter(Boolean);
 
@@ -46,9 +59,10 @@ export default function Dashboard({ adminOnly = false }) {
       </div>
       {notice && <div className="alert warning">{notice}</div>}
       <div className="stat-grid">
-        {cards.map(([title, value, detail, icon]) => (
-          <StatCard key={title} title={title} value={value ?? 0} detail={detail} icon={icon} />
-        ))}
+        {cards.map(([title, value, detail, icon, to]) => {
+          const card = <StatCard key={title} title={title} value={isAdmin ? (value ?? '…') : 'Open'} detail={detail} icon={icon} />;
+          return to ? <Link key={title} to={to} className="stat-link">{card}</Link> : card;
+        })}
       </div>
       <div className="role-workspace">
         <article className="dashboard-panel">

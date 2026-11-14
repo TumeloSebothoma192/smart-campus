@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, apiError, mock } from '../services/api';
+import { api, apiError } from '../services/api';
 import { useAuth } from '../context/AuthContext.jsx';
 import { canTeach } from '../services/roles.js';
 
@@ -15,8 +15,8 @@ export default function Appointments() {
     api.get(isLecturer ? '/api/appointments/lecturer/appointments' : '/api/appointments/myAppointments')
       .then((response) => setAppointments(response.data.appointments || []))
       .catch((err) => {
-        setAppointments(mock.appointments);
-        setNotice(`Showing fallback appointments: ${apiError(err)}`);
+        setAppointments([]);
+        setNotice(`Could not load appointments: ${apiError(err)}`);
       });
   }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, apiError, mock } from '../services/api';
+import { api, apiError } from '../services/api';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Maintenance() {
@@ -13,8 +13,8 @@ export default function Maintenance() {
     api.get(isAdmin ? '/api/maintenance/all' : '/api/maintenance/my-issues')
       .then((response) => setIssues(response.data.issues || []))
       .catch((err) => {
-        setIssues(mock.issues);
-        setNotice(`Showing fallback issues: ${apiError(err)}`);
+        setIssues([]);
+        setNotice(`Could not load maintenance issues: ${apiError(err)}`);
       });
   }
 

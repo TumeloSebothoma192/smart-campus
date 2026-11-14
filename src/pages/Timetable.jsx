@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, apiError, mock } from '../services/api';
+import { api, apiError } from '../services/api';
 
 export default function Timetable() {
   const [timetable, setTimetable] = useState([]);
@@ -10,8 +10,8 @@ export default function Timetable() {
     api.get('/api/timetables/myTimetable')
       .then((response) => setTimetable(response.data.timetable || []))
       .catch((err) => {
-        setTimetable(mock.timetable);
-        setNotice(`Showing fallback timetable: ${apiError(err)}`);
+        setTimetable([]);
+        setNotice(`Could not load the timetable: ${apiError(err)}`);
       });
   }
 

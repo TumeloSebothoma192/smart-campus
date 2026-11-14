@@ -6,8 +6,12 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('smartCampusToken') || '');
   const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem('smartCampusUser');
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = localStorage.getItem('smartCampusUser');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
