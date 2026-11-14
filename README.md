@@ -1,60 +1,49 @@
-# Smart Campus Frontend
+# Smart Campus Management System
 
-Fresh React + Vite frontend for the Smart Campus Java backend.
+A campus service management system built in an Agile team at Tshwane University of Technology. Students, lecturers, staff and managers each get their own dashboard for logging and tracking campus service requests.
 
-## Run
+**Live demo:** [portfolio-six-bice-5lh3it3mor.vercel.app](https://portfolio-six-bice-5lh3it3mor.vercel.app) · **Case study:** [tumelosebothoma.vercel.app/projects/smart-campus](https://tumelosebothoma.vercel.app/projects/smart-campus)
 
-```powershell
+This repository is the **React + Vite frontend**. It talks to a Java EE backend (REST APIs over a SQL database).
+
+## What I worked on
+
+- Requirements analysis and system design with the team
+- Frontend: role-based dashboards and request flows
+- Integration with the Java EE REST backend
+- Iterative delivery in Agile sprints with Git
+
+## Stack
+
+- **Frontend:** React, Vite, JavaScript
+- **Backend (separate service):** Java EE, REST APIs, SQL
+- **Deployment:** Vercel
+
+## Demo accounts
+
+These are seeded demo users for trying the app:
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@campus.local | admin123 |
+| Lecturer | lecturer@campus.local | lecturer123 |
+| Manager | manager@campus.local | manager123 |
+| Staff | staff@campus.local | staff123 |
+| Student | student@campus.local | student123 |
+
+## Run locally
+
+```bash
 npm install
 npm run dev
 ```
 
-Open:
-
-```text
-http://127.0.0.1:5173/
-```
-
-Backend API base:
+Then open http://127.0.0.1:5173/. Point the app at the backend with:
 
 ```text
 VITE_API_URL=http://localhost:8081/CampusServiceManagementSystemBackend/web
 ```
 
-For Vercel, set `VITE_API_URL` to your hosted Java backend URL, for example:
+## Deploy
 
-```text
-https://smart-campus-api.onrender.com/CampusServiceManagementSystemBackend/web
-```
-
-## Deploy To GitHub + Vercel
-
-```powershell
-git init
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_FRONTEND_REPO.git
-git add .
-git commit -m "Deploy Smart Campus frontend"
-git push -u origin main
-```
-
-Then import the GitHub repo in Vercel.
-
-Vercel settings:
-
-```text
-Framework: Vite
-Build command: npm run build
-Output directory: dist
-Environment variable: VITE_API_URL=<hosted backend /web URL>
-```
-
-Demo login:
-
-```text
-admin@campus.local / admin123
-lecturer@campus.local / lecturer123
-manager@campus.local / manager123
-staff@campus.local / staff123
-student@campus.local / student123
-```
+On Vercel: framework **Vite**, build command `npm run build`, output directory `dist`, and set `VITE_API_URL` to the hosted backend's `/web` URL.
